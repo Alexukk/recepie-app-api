@@ -1,0 +1,35 @@
+name: Checks
+
+on:
+  push: # Триггер, запускается при каждом пуше
+
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04 # Система, на которой будет выполняться работа
+
+    steps:
+      # 1. Вход в Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 2. Клонирование репозитория
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 3. Установка Docker Compose
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      # 4. Запуск тестов
+      - name: Run tests
+        run: docker-compose run --rm app sh -c "python manage.py test"
+
+      # 5. Линтинг кода
+      - name: Lint code
+        run: docker-compose run --rm app sh -c "flake8"
